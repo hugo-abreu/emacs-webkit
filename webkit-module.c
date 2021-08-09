@@ -314,10 +314,11 @@ webkit_proxy_set_uri (emacs_env *env, ptrdiff_t n, emacs_value *args, void *ptr)
   if ((c != NULL) && copy_string_contents (env, args[1], &proxy_uri, &size))
     {
       WebKitWebContext *context = webkit_web_view_get_context (c->view);
+      WebKitWebsiteDataManager * data = webkit_web_context_get_website_data_manager(context);
       WebKitNetworkProxySettings *proxy = webkit_network_proxy_settings_new
         (proxy_uri, NULL);
-      webkit_web_context_set_network_proxy_settings
-        (context, WEBKIT_NETWORK_PROXY_MODE_CUSTOM, proxy);
+      webkit_website_data_manager_set_network_proxy_settings
+        (data, WEBKIT_NETWORK_PROXY_MODE_CUSTOM, proxy);
       webkit_network_proxy_settings_free (proxy);
       debug_print ("c %p webkit_proxy_set_uri %s\n", c, proxy_uri);
     }
@@ -333,8 +334,9 @@ webkit_proxy_set_default (emacs_env *env, ptrdiff_t n,
   if ((c != NULL))
     {
       WebKitWebContext *context = webkit_web_view_get_context (c->view);
-      webkit_web_context_set_network_proxy_settings
-        (context, WEBKIT_NETWORK_PROXY_MODE_DEFAULT, NULL);
+      WebKitWebsiteDataManager * data = webkit_web_context_get_website_data_manager(context);
+      webkit_website_data_manager_set_network_proxy_settings
+        (data, WEBKIT_NETWORK_PROXY_MODE_DEFAULT, NULL);
       debug_print ("c %p webkit_proxy_set_default\n", c);
     }
   return Qnil;
@@ -365,7 +367,7 @@ webkit_resize (emacs_env *env, ptrdiff_t n, emacs_value *args, void *ptr)
 }
 
 static ssize_t
-rio_writen (int fd, void *usrbuf, size_t n) 
+rio_writen (int fd, void *usrbuf, size_t n)
 {
   size_t nleft = n;
   ssize_t nwritten;
@@ -771,7 +773,7 @@ webcontext_download_started (WebKitWebContext *webctx, WebKitDownload *download,
 
   if (uri != NULL)
     send_to_lisp (c, "webkit--callback-download-request", uri);
-} 
+}
 
 /*
 #ifdef DEBUG
@@ -970,7 +972,7 @@ webview_destroy (WebKitWebView *webview, Client *c)
       c->container = NULL;
       send_to_lisp (c, "webkit--close", "");
     }
-  else 
+  else
     {
       webkit_move_to_frame (c, fixed);
     }
@@ -1034,7 +1036,7 @@ webkit_new (emacs_env *env, ptrdiff_t n, emacs_value *args, void *ptr)
 
   c->view = WEBKIT_WEB_VIEW (webkit_web_view_new_with_context (context));
   /* set lifetime of c->view to be same as c which is owend by Emacs user_ptr */
-  g_object_ref (c->view); 
+  g_object_ref (c->view);
   g_object_ref_sink (c->view);
   gtk_widget_set_can_focus(GTK_WIDGET(c->view), FALSE);
   //gtk_widget_set_focus_on_click (GTK_WIDGET (c->view), FALSE);
@@ -1181,4 +1183,3 @@ emacs_module_init (struct emacs_runtime *ert)
   debug_print ("init webkit-module\n");
   return 0;
 }
-
