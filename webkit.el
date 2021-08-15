@@ -132,6 +132,7 @@ Set to `nil' to disable saving cookies to a file."
 
 (defvar webkit-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map "n" 'webkit-browse-url)
     (define-key map "g" 'webkit)
     (define-key map "f" 'webkit-forward)
     (define-key map "b" 'webkit-back)
@@ -648,7 +649,7 @@ Returns the newly created webkit buffer"
 (defun webkit-browse-url (url &optional new-session)
   "Goto URL with webkit using browse-url.
 
-NEW-SESSION specifies whether to create a new webkit session or use the 
+NEW-SESSION specifies whether to create a new webkit session or use the
 current session."
   (interactive (browse-url-interactive-arg "URL: "))
   (if webkit-browse-url-force-new (setq new-session (not new-session)))
@@ -657,7 +658,7 @@ current session."
     (let* ((id (or webkit--id (with-current-buffer (car webkit--buffers)
                                webkit--id)))
           (buffer (seq-find  (lambda (buffer)
-                               (with-current-buffer buffer 
+                               (with-current-buffer buffer
                                  (when (eq id webkit--id) buffer)))
                              webkit--buffers)))
       (webkit--load-uri id url)
@@ -673,7 +674,7 @@ If called with a prefix ARG, create a new webkit buffer instead of reusing
 the default webkit buffer."
   (interactive
    (let ((prompt "URL or keywords: "))
-     (list 
+     (list
       (if (require 'webkit-history nil t)
           (webkit-history-completing-read prompt)
         (read-string prompt))
